@@ -9,11 +9,18 @@ connection();
 app.use(cors());
 app.use(express.json());
 
-const soloCollection = client.db("soloSphereDB").collection("soloSphere");
+const soloCollection = client.db("soloDB").collection("jobs");
 
-app.post("/solos", async (req, res) => {
-  const newSolo = req.body;
-  const result = await soloCollection.insertOne(newSolo);
+//save data in database
+app.post("/add-job", async (req, res) => {
+  const newData = req.body;
+  const result = await soloCollection.insertOne(newData);
+  res.send(result);
+});
+
+//get all jobs data in database
+app.get("/jobs", async (req, res) => {
+  const result = await soloCollection.find().toArray();
   res.send(result);
 });
 app.get("/", (req, res) => {
