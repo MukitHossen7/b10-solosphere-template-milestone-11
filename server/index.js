@@ -46,6 +46,13 @@ app.delete("/job/:id", async (req, res) => {
 //   const result = await soloCollection.find(query).toArray();
 //   res.send(result);
 // });
+
+//Single data access in database
+app.get("/job/:id", async (req, res) => {
+  const id = req.params.id;
+  const result = await soloCollection.findOne({ _id: new ObjectId(id) });
+  res.send(result);
+});
 app.get("/", (req, res) => {
   res.send("Hello from SoloSphere Server....");
 });
