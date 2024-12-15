@@ -1,17 +1,34 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { AuthContext } from "../providers/AuthProvider";
 
 const MyPostedJobs = () => {
+  // use params
+  // const [jobs, setJobs] = useState([]);
+  // const { user } = useContext(AuthContext);
+  // useEffect(() => {
+  //   fetchAllJobsData();
+  // }, [user.email]);
+  // const fetchAllJobsData = async () => {
+  //   const { data } = await axios.get(
+  //     `${import.meta.env.VITE_API_URL}/jobs/${user.email}`
+  //   );
+  //   setJobs(data);
+  // };
+
   const [jobs, setJobs] = useState([]);
+  const { user } = useContext(AuthContext);
+  console.log(user.email);
   useEffect(() => {
     fetchAllJobsData();
-  }, []);
+  }, [user]);
   const fetchAllJobsData = async () => {
-    const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/jobs`);
+    const { data } = await axios.get(
+      `${import.meta.env.VITE_API_URL}/jobs?email=${user.email}`
+    );
     setJobs(data);
   };
-
   return (
     <section className="container px-4 mx-auto pt-12">
       <div className="flex items-center gap-x-3">
