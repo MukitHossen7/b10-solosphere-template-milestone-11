@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express();
 const { connection, client } = require("./DB/databaseDB");
+const { ObjectId } = require("mongodb");
 const port = process.env.PORT || 9000;
 connection();
 
@@ -29,6 +30,13 @@ app.get("/jobs", async (req, res) => {
     const result = await soloCollection.find().toArray();
     res.send(result);
   }
+});
+
+// delete data in database use params
+app.delete("/job/:id", async (req, res) => {
+  const id = req.params.id;
+  const result = await soloCollection.deleteOne({ _id: new ObjectId(id) });
+  res.send(result);
 });
 // get data user params
 
