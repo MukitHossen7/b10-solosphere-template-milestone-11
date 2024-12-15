@@ -20,9 +20,24 @@ app.post("/add-job", async (req, res) => {
 
 //get all jobs data in database
 app.get("/jobs", async (req, res) => {
-  const result = await soloCollection.find().toArray();
-  res.send(result);
+  const email = req.query.email;
+  if (email) {
+    const query = { "buyer.email": email };
+    const result = await soloCollection.find(query).toArray();
+    res.send(result);
+  } else {
+    const result = await soloCollection.find().toArray();
+    res.send(result);
+  }
 });
+// get data user params
+
+// app.get("/jobs/:email", async (req, res) => {
+//   const email = req.params.email;
+//   const query = { "buyer.email": email };
+//   const result = await soloCollection.find(query).toArray();
+//   res.send(result);
+// });
 app.get("/", (req, res) => {
   res.send("Hello from SoloSphere Server....");
 });
