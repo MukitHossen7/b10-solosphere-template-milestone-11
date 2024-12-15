@@ -53,6 +53,32 @@ app.get("/job/:id", async (req, res) => {
   const result = await soloCollection.findOne({ _id: new ObjectId(id) });
   res.send(result);
 });
+
+//update data in database use params
+app.put("/update-job/:id", async (req, res) => {
+  const id = req.params.id;
+  const updatedData = req.body;
+  const query = { _id: new ObjectId(id) };
+  const options = { upsert: true };
+  const updateDoc = {
+    $set: {
+      title: updatedData.title,
+      description: updatedData.description,
+      buyer: {
+        email: updatedData.buyer.email,
+        name: updatedData.buyer.name,
+        photo: updatedData.buyer.photo,
+      },
+      deadline: updatedData.deadline,
+      category: updatedData.category,
+      min_price: updatedData.min_price,
+      max_price: updatedData.max_price,
+      bid_count: updatedData.bid_count,
+    },
+  };
+  const result = await soloCollection.updateOne(query, updateDoc, options);
+  res.send(result);
+});
 app.get("/", (req, res) => {
   res.send("Hello from SoloSphere Server....");
 });
