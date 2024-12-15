@@ -2,6 +2,7 @@ import { useContext, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { AuthContext } from "../providers/AuthProvider";
+import { format } from "date-fns";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ const AddJob = () => {
     const form = e.target;
     const title = form.job_title.value;
     const email = form.email.value;
-    const deadline = startDate;
+    const deadline = format(new Date(startDate), "P");
     const category = form.category.value;
     const min_price = parseInt(form.min_price.value);
     const max_price = parseInt(form.max_price.value);
