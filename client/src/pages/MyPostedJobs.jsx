@@ -2,6 +2,7 @@ import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
+import toast from "react-hot-toast";
 
 const MyPostedJobs = () => {
   // use params
@@ -19,7 +20,6 @@ const MyPostedJobs = () => {
 
   const [jobs, setJobs] = useState([]);
   const { user } = useContext(AuthContext);
-  console.log(user.email);
   useEffect(() => {
     fetchAllJobsData();
   }, [user]);
@@ -28,6 +28,47 @@ const MyPostedJobs = () => {
       `${import.meta.env.VITE_API_URL}/jobs?email=${user.email}`
     );
     setJobs(data);
+  };
+  const handleDelete = async (id) => {
+    try {
+      const { data } = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/job/${id}`
+      );
+      if (data.deletedCount > 0) {
+        toast.success("Job deleted successfully");
+        // const updatedJobs = jobs.filter((job) => job._id !== id);
+        // setJobs(updatedJobs);
+        fetchAllJobsData();
+      }
+    } catch (error) {
+      console.log(error.message);
+    }
+  };
+  const customToast = (id) => {
+    toast((t) => (
+      <div className="flex items-center gap-3">
+        <p>
+          Are you <b>Sure?</b>
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            className="px-3 py-1 rounded-lg hover:bg-green-500 bg-green-500 text-white"
+            onClick={() => {
+              toast.dismiss(t.id);
+              handleDelete(id);
+            }}
+          >
+            Yes
+          </button>
+          <button
+            className="px-3 py-1 rounded-lg hover:bg-red-500 bg-red-500 text-white"
+            onClick={() => toast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    ));
   };
   return (
     <section className="container px-4 mx-auto pt-12">
@@ -117,7 +158,10 @@ const MyPostedJobs = () => {
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-6">
-                          <button className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none">
+                          <button
+                            onClick={() => customToast(job._id)}
+                            className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none"
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
