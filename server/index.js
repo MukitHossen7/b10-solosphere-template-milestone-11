@@ -11,6 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 const soloCollection = client.db("soloDB").collection("jobs");
+const bidCollection = client.db("soloDB").collection("bids");
 
 //save data in database
 app.post("/add-job", async (req, res) => {
@@ -19,6 +20,48 @@ app.post("/add-job", async (req, res) => {
   res.send(result);
 });
 
+//bid data in database
+app.post("/bid_jobs", async (req, res) => {
+  const newBidData = req.body;
+  const result = await bidCollection.insertOne(newBidData);
+
+  // Check allReady bid this job
+  const query = { bid_email: newBidData.bid_email, jobId: newBidData.jobId };
+  const checkBids = await bidCollection.find(query);
+  if (checkBids) {
+    return res.status(400).send({ massage: "Already bids this job" });
+  }
+  //update bid count
+  const idJob = req.body.jobId;
+  const filter = { _id: new ObjectId(idJob) };
+  const updateDoc = {
+    $inc: { bid_count: 1 },
+  };
+  const updateJob = await soloCollection.updateOne(filter, updateDoc);
+  res.send(result);
+});
+
+//get all bid data in login user in database
+// app.get("/bid_jobs", async (req, res) => {
+//   const
+//   const email = req.query.email;
+//   console.log(email);
+//   res.send([]);
+// });
+app.get("/bid_jobs", async (req, res) => {
+  const email = req.query.email;
+  const query = { bid_email: email };
+  const bidUsers = await bidCollection.find(query).toArray();
+  for (const bidUser of bidUsers) {
+    const params = { _id: new ObjectId(bidUser.jobId) };
+    const bidJob = await soloCollection.findOne(params);
+    if (bidJob) {
+      bidUser.title = bidJob.title;
+      bidUser.category = bidJob.category;
+    }
+  }
+  res.send(bidUsers);
+});
 //get all jobs data in database
 app.get("/jobs", async (req, res) => {
   const email = req.query.email;

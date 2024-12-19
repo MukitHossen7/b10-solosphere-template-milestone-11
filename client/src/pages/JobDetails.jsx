@@ -6,6 +6,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
 import toast from "react-hot-toast";
+import { format } from "date-fns";
 
 const JobDetails = () => {
   const { id } = useParams();
@@ -23,7 +24,7 @@ const JobDetails = () => {
     );
     setJob(data);
   };
-  console.log(job);
+
   const {
     _id,
     buyer,
@@ -40,13 +41,16 @@ const JobDetails = () => {
     const bidPrice = parseInt(e.target.price.value);
     const bid_email = e.target.email.value;
     const comment = e.target.comment.value;
-    const bid_deadline = startDate;
+    const bid_deadline = format(new Date(startDate), "P");
     const dibData = {
       bidPrice,
       bid_email,
       comment,
       bid_deadline,
       jobId: _id,
+      title,
+      category,
+      status: "Pending",
     };
     const provideDeadline = new Date(deadline);
     const myDataLine = new Date(bid_deadline);
@@ -78,9 +82,8 @@ const JobDetails = () => {
         console.log(data);
       }
     } catch (error) {
-      console.log(error);
+      toast.error("Already bids this job");
     }
-    console.log(dibData);
   };
 
   return (

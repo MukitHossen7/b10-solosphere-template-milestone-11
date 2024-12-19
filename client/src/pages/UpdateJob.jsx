@@ -48,7 +48,7 @@ const UpdateJob = () => {
       bid_count: job?.bid_count,
     };
     try {
-      const { data } = await axios.put(
+      const { data } = await axios.patch(
         `${import.meta.env.VITE_API_URL}/update-job/${id}`,
         updateData
       );
