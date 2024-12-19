@@ -23,14 +23,14 @@ app.post("/add-job", async (req, res) => {
 //bid data in database
 app.post("/bid_jobs", async (req, res) => {
   const newBidData = req.body;
-  const result = await bidCollection.insertOne(newBidData);
-
   // Check allReady bid this job
   const query = { bid_email: newBidData.bid_email, jobId: newBidData.jobId };
-  const checkBids = await bidCollection.find(query);
+  const checkBids = await bidCollection.findOne(query);
   if (checkBids) {
     return res.status(400).send({ massage: "Already bids this job" });
   }
+
+  const result = await bidCollection.insertOne(newBidData);
   //update bid count
   const idJob = req.body.jobId;
   const filter = { _id: new ObjectId(idJob) };
@@ -42,26 +42,34 @@ app.post("/bid_jobs", async (req, res) => {
 });
 
 //get all bid data in login user in database
-// app.get("/bid_jobs", async (req, res) => {
-//   const
-//   const email = req.query.email;
-//   console.log(email);
-//   res.send([]);
-// });
-app.get("/bid_jobs", async (req, res) => {
-  const email = req.query.email;
+
+app.get("/bid_jobs/:email", async (req, res) => {
+  const email = req.params.email;
   const query = { bid_email: email };
   const bidUsers = await bidCollection.find(query).toArray();
-  for (const bidUser of bidUsers) {
-    const params = { _id: new ObjectId(bidUser.jobId) };
-    const bidJob = await soloCollection.findOne(params);
-    if (bidJob) {
-      bidUser.title = bidJob.title;
-      bidUser.category = bidJob.category;
-    }
-  }
   res.send(bidUsers);
 });
+app.get("/bid_request", async (req, res) => {
+  const email = req.query.email;
+  const query = { buyer_email: email };
+  const bidUsers = await bidCollection.find(query).toArray();
+  res.send(bidUsers);
+});
+
+// app.get("/bid_jobs", async (req, res) => {
+//   const email = req.query.email;
+//   const query = { bid_email: email };
+//   const bidUsers = await bidCollection.find(query).toArray();
+//   for (const bidUser of bidUsers) {
+//     const params = { _id: new ObjectId(bidUser.jobId) };
+//     const bidJob = await soloCollection.findOne(params);
+//     if (bidJob) {
+//       bidUser.title = bidJob.title;
+//       bidUser.category = bidJob.category;
+//     }
+//   }
+//   res.send(bidUsers);
+// });
 //get all jobs data in database
 app.get("/jobs", async (req, res) => {
   const email = req.query.email;
@@ -98,7 +106,7 @@ app.get("/job/:id", async (req, res) => {
 });
 
 //update data in database use params
-app.put("/update-job/:id", async (req, res) => {
+app.patch("/update-job/:id", async (req, res) => {
   const id = req.params.id;
   const updatedData = req.body;
   const query = { _id: new ObjectId(id) };
