@@ -3,14 +3,16 @@ import { useContext, useEffect, useState } from "react";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AuthContext } from "../providers/AuthProvider";
+import toast from "react-hot-toast";
 
 const JobDetails = () => {
   const { id } = useParams();
   const [startDate, setStartDate] = useState(new Date());
   const [job, setJob] = useState({});
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSingleJobData();
@@ -21,11 +23,21 @@ const JobDetails = () => {
     );
     setJob(data);
   };
-  const { buyer, category, deadline, description, max_price, min_price } = job;
+  console.log(job);
+  const {
+    _id,
+    buyer,
+    category,
+    deadline,
+    description,
+    max_price,
+    min_price,
+    title,
+  } = job;
 
-  const handlePlaceBid = (e) => {
+  const handlePlaceBid = async (e) => {
     e.preventDefault();
-    const bidPrice = e.target.price.value;
+    const bidPrice = parseInt(e.target.price.value);
     const bid_email = e.target.email.value;
     const comment = e.target.comment.value;
     const bid_deadline = startDate;
@@ -34,14 +46,43 @@ const JobDetails = () => {
       bid_email,
       comment,
       bid_deadline,
+      jobId: _id,
     };
+    const provideDeadline = new Date(deadline);
+    const myDataLine = new Date(bid_deadline);
+
+    //Check bid permissions validation
+    if (buyer?.email === user?.email) {
+      toast.error("You cannot bid on your own job.");
+      return;
+    }
+    //Bid max price validation
+    if (bidPrice >= parseInt(max_price)) {
+      toast.error("Offer less or at least equal to maximum price");
+      return;
+    }
+    //Dateline crossed validation
+    if (provideDeadline < myDataLine) {
+      toast.error("Offer Deadline Crossed,Bidding Forbidden");
+      return;
+    }
+    try {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_API_URL}/bid_jobs`,
+        dibData
+      );
+      if (data.insertedId) {
+        toast.success("Bid placed successfully");
+        e.target.reset();
+        navigate("/my-bids");
+        console.log(data);
+      }
+    } catch (error) {
+      console.log(error);
+    }
     console.log(dibData);
-    // const bidPrice = parseInt(e.target.bid_price.value);
-    // if (bidPrice > max_price || bidPrice < min_price) {
-    //   alert("Invalid bid price. Please enter a price between min and max price.");
-    //   return;
-    // }
   };
+
   return (
     <div className="flex flex-col md:flex-row justify-around gap-5  items-center min-h-[calc(100vh-306px)] md:max-w-screen-xl mx-auto ">
       {/* Job Details */}
@@ -57,7 +98,7 @@ const JobDetails = () => {
 
         <div>
           <h1 className="mt-2 text-3xl font-semibold text-gray-800 ">
-            {category}
+            {title}
           </h1>
 
           <p className="mt-2 text-lg text-gray-600 ">{description}</p>
@@ -74,11 +115,11 @@ const JobDetails = () => {
               </p>
             </div>
             <div className="rounded-full object-cover overflow-hidden w-14 h-14">
-              <img src={buyer?.photo} alt="" />
+              <img referrerPolicy="no-referrer" src={buyer?.photo} alt="" />
             </div>
           </div>
           <p className="mt-6 text-lg font-bold text-gray-600 ">
-            Range: ${max_price} - ${min_price}
+            Range: ${min_price} - ${max_price}
           </p>
         </div>
       </div>
