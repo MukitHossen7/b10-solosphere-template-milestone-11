@@ -10,7 +10,7 @@ const MyBids = () => {
   }, []);
   const fetchDidData = async () => {
     const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/bid_jobs?email=${user.email}`
+      `${import.meta.env.VITE_API_URL}/bid_jobs/${user.email}`
     );
     setBids(data);
   };
@@ -88,7 +88,7 @@ const MyBids = () => {
                       </td>
 
                       <td className="px-4 py-4 text-sm text-gray-500  whitespace-nowrap">
-                        $500
+                        ${bid?.bidPrice}
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-2">

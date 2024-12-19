@@ -51,6 +51,7 @@ const JobDetails = () => {
       title,
       category,
       status: "Pending",
+      buyer_email: buyer?.email,
     };
     const provideDeadline = new Date(deadline);
     const myDataLine = new Date(bid_deadline);
