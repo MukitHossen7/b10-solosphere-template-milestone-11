@@ -10,7 +10,8 @@ const MyBids = () => {
   }, []);
   const fetchDidData = async () => {
     const { data } = await axios.get(
-      `${import.meta.env.VITE_API_URL}/bid_jobs/${user.email}`
+      `${import.meta.env.VITE_API_URL}/bid_jobs/${user.email}`,
+      { withCredentials: true }
     );
     setBids(data);
   };
