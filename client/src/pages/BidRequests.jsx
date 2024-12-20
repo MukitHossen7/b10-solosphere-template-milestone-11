@@ -14,6 +14,24 @@ const BidRequests = () => {
     );
     setBids(data);
   };
+  const handleAction = async (id, previousStatus, status) => {
+    if (previousStatus === status || previousStatus === "Complete") {
+      return console.log("Not Allow");
+    }
+    const statusBody = {
+      status,
+    };
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/bid_status_update/${id}`,
+        statusBody
+      );
+      fetchDidData();
+    } catch (error) {
+      console.log(error);
+    }
+    console.table({ id, previousStatus, status });
+  };
   console.log(bids);
   return (
     <section className="container px-4 mx-auto my-12">
@@ -129,7 +147,16 @@ const BidRequests = () => {
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <div className="flex items-center gap-x-6">
-                          <button className="disabled:cursor-not-allowed text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none">
+                          <button
+                            onClick={() =>
+                              handleAction(bid._id, bid?.status, "In Progress")
+                            }
+                            disabled={
+                              bid?.status === "In Progress" ||
+                              bid?.status === "Complete"
+                            }
+                            className="disabled:cursor-not-allowed text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none"
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"
@@ -146,7 +173,17 @@ const BidRequests = () => {
                             </svg>
                           </button>
 
-                          <button className="disabled:cursor-not-allowed text-gray-500 transition-colors duration-200   hover:text-yellow-500 focus:outline-none">
+                          <button
+                            onClick={() =>
+                              handleAction(bid._id, bid?.status, "Rejected")
+                            }
+                            disabled={
+                              bid?.status === "In Progress" ||
+                              bid?.status === "Complete" ||
+                              bid?.status === "Rejected"
+                            }
+                            className="disabled:cursor-not-allowed text-gray-500 transition-colors duration-200   hover:text-yellow-500 focus:outline-none"
+                          >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               fill="none"

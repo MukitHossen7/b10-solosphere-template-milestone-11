@@ -14,7 +14,24 @@ const MyBids = () => {
     );
     setBids(data);
   };
-  console.log(bids);
+  const handleAction = async (id, previousStatus, status) => {
+    if (previousStatus !== "In Progress") {
+      return console.log("Not Allow");
+    }
+    const statusBody = {
+      status,
+    };
+    try {
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/bid_status_update/${id}`,
+        statusBody
+      );
+      fetchDidData();
+    } catch (error) {
+      console.log(error);
+    }
+    console.table({ id, previousStatus, status });
+  };
   return (
     <section className="container px-4 mx-auto my-12">
       <div className="flex items-center gap-x-3">
@@ -122,7 +139,14 @@ const MyBids = () => {
                       </td>
                       <td className="px-4 py-4 text-sm whitespace-nowrap">
                         <button
+                          onClick={() =>
+                            handleAction(bid._id, bid?.status, "Complete")
+                          }
                           title="Mark Complete"
+                          disabled={
+                            bid.status === "Complete" ||
+                            bid.status === "Pending"
+                          }
                           className="text-gray-500 transition-colors duration-200   hover:text-red-500 focus:outline-none disabled:cursor-not-allowed"
                         >
                           <svg
