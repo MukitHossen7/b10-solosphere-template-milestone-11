@@ -1,18 +1,50 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const app = express();
 const { connection, client } = require("./DB/databaseDB");
 const { ObjectId } = require("mongodb");
 const port = process.env.PORT || 9000;
 connection();
 
-app.use(cors());
+//Add middleware
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+    optionsSuccessStatus: 200,
+  })
+);
 app.use(express.json());
+app.use(cookieParser());
+//Add middleware
 
 const soloCollection = client.db("soloDB").collection("jobs");
 const bidCollection = client.db("soloDB").collection("bids");
 
+//verify the user usage token
+app.post("/jwt", async (req, res) => {
+  const user = req.body;
+  const token = jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: "1h" });
+  res
+    .cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    })
+    .send({ success: true });
+});
+app.post("/logOut", async (req, res) => {
+  res
+    .clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    })
+    .send({ cookieRemove: true });
+});
 //save data in database
 app.post("/add-job", async (req, res) => {
   const newData = req.body;
@@ -20,21 +52,23 @@ app.post("/add-job", async (req, res) => {
   res.send(result);
 });
 
-//All job fetched
+// All jobs fetched successfully
 app.get("/all_jobs", async (req, res) => {
   const filter = req.query.filter;
   const search = req.query.search;
+  const sort = req.query.sort;
+  const query = {};
   if (filter) {
-    const query = { category: filter };
-    const result = await soloCollection.find(query).toArray();
-    return res.send(result);
+    query.category = filter;
   }
   if (search) {
-    const query = { title: { $regex: search, $options: "i" } };
-    const result = await soloCollection.find(query).toArray();
-    return res.send(result);
+    query.title = { $regex: search, $options: "i" };
   }
-  const result = await soloCollection.find().toArray();
+  const sortOptions = { deadline: sort === "dsc" ? 1 : -1 };
+
+  const result = sortOptions
+    ? await soloCollection.find(query).sort(sortOptions).toArray()
+    : await soloCollection.find(query).toArray();
   res.send(result);
 });
 //bid data in database
