@@ -20,6 +20,23 @@ app.post("/add-job", async (req, res) => {
   res.send(result);
 });
 
+//All job fetched
+app.get("/all_jobs", async (req, res) => {
+  const filter = req.query.filter;
+  const search = req.query.search;
+  if (filter) {
+    const query = { category: filter };
+    const result = await soloCollection.find(query).toArray();
+    return res.send(result);
+  }
+  if (search) {
+    const query = { title: { $regex: search, $options: "i" } };
+    const result = await soloCollection.find(query).toArray();
+    return res.send(result);
+  }
+  const result = await soloCollection.find().toArray();
+  res.send(result);
+});
 //bid data in database
 app.post("/bid_jobs", async (req, res) => {
   const newBidData = req.body;
@@ -54,6 +71,18 @@ app.get("/bid_request", async (req, res) => {
   const query = { buyer_email: email };
   const bidUsers = await bidCollection.find(query).toArray();
   res.send(bidUsers);
+});
+
+//Update Status
+app.patch("/bid_status_update/:id", async (req, res) => {
+  const status = req.body;
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: { status: status.status },
+  };
+  const result = await bidCollection.updateOne(filter, updateDoc);
+  res.send(result);
 });
 
 // app.get("/bid_jobs", async (req, res) => {
