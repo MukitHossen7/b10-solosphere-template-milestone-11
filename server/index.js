@@ -21,6 +21,16 @@ app.use(express.json());
 app.use(cookieParser());
 //Add middleware
 
+//custom middleware
+const verifyToken = (req, res, next) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).send({ message: "UnAuthorize" });
+  jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
+    if (err) return res.status(403).send({ message: "Invalid token" });
+    req.user = decoded;
+    next();
+  });
+};
 const soloCollection = client.db("soloDB").collection("jobs");
 const bidCollection = client.db("soloDB").collection("bids");
 
@@ -94,9 +104,13 @@ app.post("/bid_jobs", async (req, res) => {
 
 //get all bid data in login user in database
 
-app.get("/bid_jobs/:email", async (req, res) => {
+app.get("/bid_jobs/:email", verifyToken, async (req, res) => {
   const email = req.params.email;
   const query = { bid_email: email };
+  if (req.user.email !== email) {
+    return res.status(403).send({ message: "Forbidden" });
+  }
+
   const bidUsers = await bidCollection.find(query).toArray();
   res.send(bidUsers);
 });
