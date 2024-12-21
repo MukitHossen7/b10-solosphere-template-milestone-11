@@ -81,6 +81,13 @@ app.get("/all_jobs", async (req, res) => {
     : await soloCollection.find(query).toArray();
   res.send(result);
 });
+
+//get all jobs count
+
+app.get("/all_jobs_count", async (req, res) => {
+  const result = await soloCollection.estimatedDocumentCount();
+  res.send({ count: result });
+});
 //bid data in database
 app.post("/bid_jobs", async (req, res) => {
   const newBidData = req.body;
