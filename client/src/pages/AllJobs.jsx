@@ -8,6 +8,7 @@ const AllJobs = () => {
   const [filter, setFilter] = useState("");
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");
+  const [jobCount, setJobCount] = useState(0);
   useEffect(() => {
     const fetchAllJobsData = async () => {
       const { data } = await axios.get(
@@ -19,13 +20,16 @@ const AllJobs = () => {
     };
     fetchAllJobsData();
   }, [filter, search, sort]);
-  // const handleSearchFrom = (e) => {
-  //   e.preventDefault();
-  //   console.log(e.target.value);
-  //   setSearch(e.target.value);
-  //   e.target.reset();
-  // };
-
+  useEffect(() => {
+    const fetchAllJobsCount = async () => {
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/all_jobs_count`
+      );
+      setJobCount(data.count);
+    };
+    fetchAllJobsCount();
+  }, []);
+  console.log(jobCount);
   const handleReset = () => {
     setFilter("");
     setSearch("");
