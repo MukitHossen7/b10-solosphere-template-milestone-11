@@ -9,6 +9,10 @@ const AllJobs = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("");
   const [jobCount, setJobCount] = useState(0);
+  const [pageCard, setPageCard] = useState(5);
+  const pageCount = Math.ceil(jobCount / pageCard);
+  const pages = [...Array(pageCount).keys()];
+  const [currentPage, setCurrentPage] = useState(0);
   useEffect(() => {
     const fetchAllJobsData = async () => {
       const { data } = await axios.get(
@@ -23,18 +27,26 @@ const AllJobs = () => {
   useEffect(() => {
     const fetchAllJobsCount = async () => {
       const { data } = await axios.get(
-        `${import.meta.env.VITE_API_URL}/all_jobs_count`
+        `${
+          import.meta.env.VITE_API_URL
+        }/all_jobs_count?page=${currentPage}&size=${pageCard}`
       );
       setJobCount(data.count);
     };
     fetchAllJobsCount();
-  }, []);
-  console.log(jobCount);
+  }, [currentPage, pageCard]);
+
   const handleReset = () => {
     setFilter("");
     setSearch("");
     setSort("");
   };
+  const handleSetValue = (e) => {
+    const item = parseInt(e.target.value);
+    setPageCard(item);
+    setCurrentPage(0);
+  };
+  console.log(currentPage);
   return (
     <div className="container px-6 py-10 mx-auto min-h-[calc(100vh-306px)] flex flex-col justify-between">
       <div>
@@ -93,6 +105,27 @@ const AllJobs = () => {
             <JobCard key={job._id} job={job} />
           ))}
         </div>
+      </div>
+      <h2 className="mt-8">Current Page : {currentPage}</h2>
+      <div className="mt-5 flex gap-3">
+        {pages.map((page, idx) => (
+          <button
+            onClick={() => setCurrentPage(page)}
+            className={`btn ${currentPage === page ? "bg-red-400" : ""}`}
+            key={idx}
+          >
+            {page}
+          </button>
+        ))}
+        <select
+          value={pageCard}
+          className="border-2 border-gray-500"
+          onChange={handleSetValue}
+        >
+          <option value="3">3</option>
+          <option value="5">5</option>
+          <option value="7">7</option>
+        </select>
       </div>
     </div>
   );
