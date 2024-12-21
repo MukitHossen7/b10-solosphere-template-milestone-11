@@ -114,8 +114,11 @@ app.get("/bid_jobs/:email", verifyToken, async (req, res) => {
   const bidUsers = await bidCollection.find(query).toArray();
   res.send(bidUsers);
 });
-app.get("/bid_request", async (req, res) => {
+app.get("/bid_request", verifyToken, async (req, res) => {
   const email = req.query.email;
+  if (req.user.email !== email) {
+    return res.status(403).send({ message: "Forbidden" });
+  }
   const query = { buyer_email: email };
   const bidUsers = await bidCollection.find(query).toArray();
   res.send(bidUsers);
