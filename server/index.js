@@ -85,6 +85,9 @@ app.get("/all_jobs", async (req, res) => {
 //get all jobs count
 
 app.get("/all_jobs_count", async (req, res) => {
+  const page = parseInt(req.query.page);
+  const size = parseInt(req.query.size);
+  console.log(page, size);
   const result = await soloCollection.estimatedDocumentCount();
   res.send({ count: result });
 });
